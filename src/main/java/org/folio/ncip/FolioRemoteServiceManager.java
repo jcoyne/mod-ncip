@@ -310,7 +310,6 @@ public class FolioRemoteServiceManager implements RemoteServiceManager {
 		LocalDateTime now = LocalDateTime.now();
 		String loanDate = dtf.format(now);
 		String itemBarcode = initData.getItemId().getItemIdentifierValue();
-		String userBarcode = initData.getUserId().getUserIdentifierValue();
 
 		// LOOKUP USER & CHECK FOR BLOCKS
 		// ADDED BECAUSE THE CHECKOUT API DOES NOT LOOK FOR 'BLOCKS'
@@ -346,7 +345,7 @@ public class FolioRemoteServiceManager implements RemoteServiceManager {
 		String servicePoint = ncipProperties.getProperty(agencyId + ".checkout.service.point.id");
 		JsonObject jsonObject = new JsonObject();
 		jsonObject.put("itemBarcode", itemBarcode);
-		jsonObject.put("userBarcode", userBarcode);
+		jsonObject.put("userBarcode", user.getString("barcode"));
 		jsonObject.put("id", id.toString());
 		//jsonObject.put("loanDate", loanDate); //use default - current date/time
 		jsonObject.put("servicePointId", servicePoint);
@@ -738,10 +737,18 @@ public class FolioRemoteServiceManager implements RemoteServiceManager {
 	 *
 	 */
 	public JsonObject lookupPatronRecord(UserId userid) throws Exception {
-		String barcode = userid.getUserIdentifierValue();
+		String userIdentifier = userid.getUserIdentifierValue();
 		// LOOKUP THE PATRON
 		String baseUrl = okapiHeaders.get(Constants.X_OKAPI_URL);
-		String userApiUri = baseUrl + "/users?query=(barcode==" + barcode + ")&limit=1";
+		StringBuilder query = new StringBuilder()
+		          .append("(barcode==")
+		          .append(userIdentifier)
+		          .append(" or externalSystemId==")
+		          .append(userIdentifier)
+		          .append(" or username==")
+		          .append(userIdentifier)
+		          .append(')');
+		String userApiUri = baseUrl + "/users?query="  + URLEncoder.encode(query.toString(),StandardCharsets.UTF_8);
 		String response = callApiGet(userApiUri);
 
 		// WAS THE PATRON FOUND?
