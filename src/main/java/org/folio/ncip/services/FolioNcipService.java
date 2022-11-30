@@ -12,8 +12,7 @@ public class FolioNcipService {
 	protected void validateUserId(UserId userId) throws FolioNcipException {
 
 		this.validateUserIdIsPresent(userId);
-		//REMOVED 11/22/2022
-		//this.validateUserIdIsValid(userId);
+		this.validateUserIdIsValid(userId);
 
 	}
 
